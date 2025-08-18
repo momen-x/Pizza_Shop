@@ -4,13 +4,12 @@ import React from "react";
 import { DialogDemo } from "../DialogAddToCart/Dialog";
 import { ProductType } from "@/utils/productsType";
 
-
-
 interface MenuPartProps {
   data: ProductType[];
   title: string;
   description: string;
 }
+
 const MenuPart = async ({ data, title, description }: MenuPartProps) => {
   return (
     <div>
@@ -25,11 +24,11 @@ const MenuPart = async ({ data, title, description }: MenuPartProps) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {data.map((pizza, index) => (
               <div
-                key={index}
+                key={pizza.id || index} // Use product id if available, fallback to index
                 className="group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
               >
                 <Image
-                  alt={`Pizza ${index + 1}`}
+                  alt={pizza.name}
                   src={extractDirectImageUrl(pizza.image)}
                   width={400}
                   height={300}
@@ -47,8 +46,8 @@ const MenuPart = async ({ data, title, description }: MenuPartProps) => {
                     ${pizza.basePrice.toFixed(2)}
                   </p>
                 </div>
-                <div className="w-full m-auto rounded-2xl bg-orange-400 hover:bg-orange-100 hover:text-black p-2 mb-3.5 ">
-                  <DialogDemo />
+                <div className="w-full m-auto rounded-2xl bg-orange-400 hover:bg-orange-100 hover:text-black p-2 mb-3.5">
+                  <DialogDemo product={pizza} />
                 </div>
               </div>
             ))}

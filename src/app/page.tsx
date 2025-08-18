@@ -17,23 +17,37 @@ async function Home() {
       return <div>Database connection error</div>;
     }
 
-    const rawProducts = await prisma.product.findMany({
+    const rawProducts: ProductType[] = await prisma.product.findMany({
       orderBy: {
         order: "desc",
+      },
+      include: {
+        sizes: true,
+        extras: true,
       },
     });
     // console.log("prouct us", await rawProducts);
 
-    const Products: ProductType[] = rawProducts.map((product: ProductType) => ({
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      image: product.image,
-      order: product.order,
+    const Products: ProductType[] = rawProducts.map((product) => ({
       basePrice: product.basePrice,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt,
       categoryId: product.categoryId,
+      createdAt: product.createdAt,
+      description: product.description,
+      id: product.id,
+      image: product.image,
+      name: product.name,
+      order: product.order,
+      updatedAt: product.updatedAt,
+      sizes: product.sizes.map((s) => ({
+        id: s.id,
+        name: s.name,
+        price: s.price,
+      })),
+      extras: product.extras ? product.extras.map((e) => ({
+        id: e.id,
+        name: e.name,
+        price: e.price,
+      })) : [],
     }));
 
     const data = [];

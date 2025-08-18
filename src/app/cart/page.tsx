@@ -6,6 +6,7 @@ const CartPage = () => {
     <div>
       <div>
         <section>
+      
           <CartInput />
         </section>
       </div>

@@ -1,37 +1,34 @@
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Option } from "@/utils/productsType";
 
-interface  option{
-    name: string;
-    prise: number;
-}
 interface RadioGroupDemoProps {
-  options: option[];  // Changed from 'group' to 'options' for clarity
-  defaultValue?: string;  // Optional default selected value
+  options: Option[];
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
 }
 
-
-
-export function RadioGroupDemo({ 
-  options, 
-  defaultValue, 
+export function RadioGroupDemo({
+  options,
+  defaultValue,
+  onValueChange,
 }: RadioGroupDemoProps) {
   return (
-    <RadioGroup 
-      defaultValue={defaultValue} 
-      className="space-y-2"  // Added for better spacing
+    <RadioGroup
+      defaultValue={defaultValue}
+      className="space-y-2"
+      onValueChange={onValueChange || undefined}
     >
       {options.map((option, index) => {
-        // Create a unique ID for each radio button
         const id = `radio-${index}`;
-        // Extract value (before space) and label (entire string)
-        const value = option.name.split(' ')[0].toLowerCase();
-        
+        // Use the original name as the value instead of transforming it
+        const value = option.name;
+
         return (
           <div key={id} className="flex items-center gap-3">
             <RadioGroupItem value={value} id={id} />
             <Label htmlFor={id} className="font-normal cursor-pointer">
-              {option.name} {option.prise}
+              {option.name} ${option.price.toFixed(2)}
             </Label>
           </div>
         );

@@ -109,9 +109,12 @@ model Extra {
 
 model Category {
   id       String    @id @default(uuid())
-  name     String
+  name     String @unique
+  description String
   order    Int       @default(autoincrement())
   products Product[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Order {
