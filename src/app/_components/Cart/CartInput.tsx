@@ -4,19 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trash2, Phone, MapPin, Hash, Globe } from "lucide-react";
-import Image from "next/image";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-import { selectCartItems, selectCartTotal, removeFromCart, updateQuantity } from "@/redux/features/cart/cartSlice";
-import { extractDirectImageUrl } from "@/utils/imageUtils";
+import { Phone, MapPin, Hash, Globe } from "lucide-react";
+// import Image from "next/image";
+
+// import { extractDirectImageUrl } from "@/utils/imageUtils";
 
 const CartInput = () => {
-  const dispatch = useAppDispatch();
-  const cartItems = useAppSelector(selectCartItems);
-  const cartTotal = useAppSelector(selectCartTotal);
-  
-  console.log("Cart items:", cartItems);
-
   const [cartData, setCartData] = useState({
     phone: "",
     streetAddress: "",
@@ -25,8 +18,8 @@ const CartInput = () => {
     country: "",
   });
 
-  const deliveryFee = 5.00;
-  const finalTotal = cartTotal + deliveryFee;
+  const deliveryFee = 5.0;
+  const finalTotal = deliveryFee;
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -38,20 +31,8 @@ const CartInput = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleAddToCart = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Order submitted with data:", cartData);
-    console.log("Cart items:", cartItems);
-  };
-
-  const handleRemoveItem = (index: number) => {
-    dispatch(removeFromCart(index));
-  };
-
-  const handleUpdateQuantity = (index: number, newQuantity: number) => {
-    if (newQuantity > 0) {
-      dispatch(updateQuantity({ index, quantity: newQuantity }));
-    }
   };
 
   return (
@@ -60,77 +41,7 @@ const CartInput = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Cart Section */}
           <div>
-            <h1 className="text-3xl font-bold text-orange-500 dark:text-orange-400 mb-8">
-              Cart ({cartItems.length} items)
-            </h1>
-
-            {cartItems.length === 0 ? (
-              <Card className="mb-6">
-                <CardContent className="p-6 text-center">
-                  <p className="text-gray-500 dark:text-gray-400">Your cart is empty</p>
-                </CardContent>
-              </Card>
-            ) : (
-              cartItems.map((item, index) => (
-                <Card key={index} className="mb-6">
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-4">
-                      <Image
-                        src={extractDirectImageUrl(item.product.image)}
-                        width={80}
-                        height={80}
-                        alt={item.product.name}
-                        className="w-20 h-20 rounded-lg object-cover"
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
-                          {item.product.name}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Size: {item.selectedSize}
-                        </p>
-                        {item.selectedExtras.length > 0 && (
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Extras: {item.selectedExtras.join(", ")}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-2 mt-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleUpdateQuantity(index, item.quantity - 1)}
-                            disabled={item.quantity <= 1}
-                          >
-                            -
-                          </Button>
-                          <span className="w-8 text-center">{item.quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleUpdateQuantity(index, item.quantity + 1)}
-                          >
-                            +
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-900 dark:text-white">
-                          ${item.totalPrice.toFixed(2)}
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 p-1"
-                          onClick={() => handleRemoveItem(index)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
+            <h1 className="text-3xl font-bold text-orange-500 dark:text-orange-400 mb-8"></h1>
 
             {/* Order Summary */}
             <Card>
@@ -141,7 +52,7 @@ const CartInput = () => {
                       Subtotal
                     </span>
                     <span className="font-semibold text-gray-600 dark:text-gray-300">
-                      ${cartTotal.toFixed(2)}
+                      ${5}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -176,7 +87,7 @@ const CartInput = () => {
               </CardHeader>
 
               <CardContent className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleAddToCart} className="space-y-4">
                   <div className="space-y-2">
                     <Label
                       htmlFor="phone"
@@ -287,7 +198,7 @@ const CartInput = () => {
                   <Button
                     type="submit"
                     className="w-full h-12 bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white font-semibold text-lg mt-6"
-                    disabled={cartItems.length === 0}
+                    disabled={true}
                   >
                     Pay ${finalTotal.toFixed(2)}
                   </Button>

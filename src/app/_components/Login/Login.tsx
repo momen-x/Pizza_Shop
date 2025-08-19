@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,8 +15,52 @@ import { FaGoogle, FaPizzaSlice } from "react-icons/fa";
 import Image from "next/image";
 import pizzaBackground from "../../../../public/assets/images/pizzaHome.jpeg";
 import Link from "../Link/Link";
-
+import { CheckLogin } from "@/utils/LoginOnServer";
+import { useRouter } from "next/navigation";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 const Login = () => {
+  const router = useRouter();
+  const [checkUser, setCheckUser] = useState({
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const dataValidation = (): boolean => {
+    if (!checkUser.email.trim() || !checkUser.password.trim()) {
+      setError("the email and password is required");
+      return false;
+    }
+    if (!checkUser.email.includes("@")) {
+      setError("Enter correct email");
+      return false;
+    }
+    setError("");
+    return true;
+  };
+
+  const handleLogin = async (e: FormEvent) => {
+    e.preventDefault();
+
+    if (!dataValidation()) {
+      return;
+    }
+    const response = await CheckLogin(checkUser);
+    try {
+      setLoading(true);
+      if (response.success) {
+        router.push("/");
+      } else {
+        setError(response.message);
+      }
+    } catch {
+      setError(response.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
       {/* Background pizza image with overlay */}
@@ -43,23 +88,40 @@ const Login = () => {
         </CardHeader>
 
         <CardContent>
-          <form className="space-y-6">
+          {error && (
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}{" "}
+          <form className="space-y-6" onSubmit={handleLogin}>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">
+              <Label
+                htmlFor="email"
+                className="text-gray-700 dark:text-gray-300"
+              >
                 Email
               </Label>
               <Input
+                disabled={loading}
                 id="email"
                 type="email"
                 placeholder="your@email.com"
                 required
                 className="py-5 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500"
+                value={checkUser.email}
+                onChange={(e) => {
+                  setCheckUser({ ...checkUser, email: e.target.value });
+                }}
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center">
-                <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="password"
+                  className="text-gray-700 dark:text-gray-300"
+                >
                   Password
                 </Label>
                 <Button
@@ -70,14 +132,22 @@ const Login = () => {
                 </Button>
               </div>
               <Input
+                disabled={loading}
                 id="password"
                 type="password"
                 required
                 className="py-5 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500"
+                value={checkUser.password}
+                onChange={(e) => {
+                  setCheckUser({ ...checkUser, password: e.target.value });
+                }}
               />
             </div>
 
             <Button
+              disabled={
+                loading || !checkUser.email.trim() || !checkUser.password.trim()
+              }
               type="submit"
               className="w-full py-5 bg-orange-500 hover:bg-orange-600 text-white font-semibold"
             >
@@ -108,14 +178,14 @@ const Login = () => {
 
           <p className="text-center text-sm text-gray-600 dark:text-gray-400">
             Don&apos;t have an account?{" "}
-           <Link href={"/register"} >
-            <Button
-              variant="link"
-              className="text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 p-0 h-auto"
+            <Link href={"/register"}>
+              <Button
+                variant="link"
+                className="text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 p-0 h-auto"
               >
-              Create one now
-            </Button>
-                </Link>
+                Create one now
+              </Button>
+            </Link>
           </p>
         </CardFooter>
       </Card>

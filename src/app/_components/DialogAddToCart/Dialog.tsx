@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,24 +17,27 @@ import { ProductType, SizeType } from "@/utils/productsType";
 import { extractDirectImageUrl } from "@/utils/imageUtils";
 import Image from "next/image";
 import { ExtrasType } from "../../../utils/productsType";
-import { useAppDispatch } from "@/redux/hooks";
+import { useCart, CartItem } from "@/context/CartContext";
 
 interface DialogDemoProps {
   product: ProductType;
 }
-
+//toDo refactor code to display a correct quantity
 export function DialogDemo({ product }: DialogDemoProps) {
-const dispatch = useAppDispatch();
- 
+  const { cart, addToCart } = useCart();
+
   const sizes: SizeType[] = product.sizes;
   const extras: ExtrasType[] = product.extras ? product.extras : [];
 
-  // State for selected options - initialize with first size
+  // State for selected options
   const [selectedSize, setSelectedSize] = useState<string>(
     sizes[0]?.name || ""
   );
   const [selectedExtras, setSelectedExtras] = useState<ExtrasType[]>([]);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(0);
+  console.log("quantity is >>>>>> ", quantity);
+
+  const [isOpen, setIsOpen] = useState(false);
 
   // Calculate total price
   const calculateTotal = () => {
@@ -48,12 +51,12 @@ const dispatch = useAppDispatch();
   };
 
   const handleSizeChange = (sizeName: string) => {
-    console.log("Size changed to:", sizeName); // Debug log
+    console.log("Size changed to:", sizeName);
     setSelectedSize(sizeName);
   };
 
   const handleExtraChange = (extraName: string, isChecked: boolean) => {
-    console.log("Extra changed:", extraName, isChecked); // Debug log
+    console.log("Extra changed:", extraName, isChecked);
     const extra = extras.find((e) => e.name === extraName);
     if (extra) {
       setSelectedExtras((prev) =>
@@ -62,94 +65,107 @@ const dispatch = useAppDispatch();
     }
   };
 
-  const handleAddToCart = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Create cart item
-    const cartItem = {
-      product,
-      selectedSize,
-      selectedExtras: selectedExtras.map(extra => extra.name),
-      quantity,
-      totalPrice: calculateTotal()
+  useEffect(() => {
+    const qua = cart.reduce((acc, item) => {
+      return acc + item.quantity;
+    }, 0);
+    setQuantity(qua);
+  }, []);
+  const handleAddToCart = () => {
+    const selectedSizeObj = sizes.find((s) => s.name === selectedSize);
+
+    if (!selectedSizeObj) {
+      console.error("No size selected");
+      return;
+    }
+    setQuantity((q) => q + 1);
+    // Create the cart item
+    const cartItem: CartItem = {
+      name: product.name,
+      id: product.id,
+      image: product.image,
+      basePrice: selectedSizeObj.price,
+      quantity: quantity,
+      size: {
+        id: selectedSizeObj.id || selectedSize,
+        name: selectedSizeObj.name as any,
+        price: selectedSizeObj.price,
+      },
+      extras: selectedExtras.map((extra) => ({
+        id: extra.id || extra.name,
+        name: extra.name as any,
+        price: extra.price,
+      })),
     };
 
-    // Dispatch to Redux store
-    dispatch(addToCart(cartItem));
+    addToCart(cartItem);
 
-    // Reset form
-    setSelectedSize(sizes[0]?.name || "");
+    // Reset form and close dialog
+    // setQuantity(1);
+  };
+  const onClose = () => {
     setSelectedExtras([]);
-    setQuantity(1);
-
-    console.log("Added to cart:", cartItem);
+    setSelectedSize(sizes[0]?.name || "");
+    setIsOpen(false);
   };
   return (
-    <Dialog>
-      <form onSubmit={handleAddToCart}>
-        <DialogTrigger asChild>
-          <Button
-            variant="outline"
-            className="border-none w-full my-2 bg-orange-400"
-          >
-            Add to cart
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="w-full h-[200px] mx-auto flex justify-center rounded-[20px] overflow-hidden">
-              <Image
-                src={extractDirectImageUrl(product.image)}
-                alt={product.name}
-                width={400}
-                height={200}
-                className="block object-cover w-full h-full"
-              />
-            </div>
-            <DialogTitle>{product.name}</DialogTitle>
-            <DialogDescription>{product.description}</DialogDescription>
-          </DialogHeader>
-
-          <h2 className="w-full m-auto">Pick your size</h2>
-          <RadioGroupDemo
-            options={sizes.map((sizeOption) => ({
-              name: sizeOption.name,
-              price: sizeOption.price,
-            }))}
-            onValueChange={handleSizeChange}
-            defaultValue={sizes[0]?.name} // Set first size as default
-          />
-
-          <h2 className="w-full m-auto">Any Extra</h2>
-          <CheckboxDemo
-            options={extras.map((extraOption) => ({
-              name: extraOption.name,
-              price: extraOption.price,
-            }))}
-            onCheckedChange={handleExtraChange}
-          />
-
-          {/* Debug info - remove this after testing */}
-          <div className="text-xs text-gray-500 mt-2">
-            <div>Selected Size: {selectedSize}</div>
-            <div>
-              Selected Extras: {selectedExtras.map((e) => e.name).join(", ")}
-            </div>
-            <div>
-              Size Price: $
-              {sizes.find((s) => s.name === selectedSize)?.price || 0}
-            </div>
-            <div>
-              Extras Price: $
-              {selectedExtras.reduce((sum, extra) => sum + extra.price, 0)}
-            </div>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          className="border-none w-full my-2 bg-orange-400"
+        >
+          Add to cart
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="w-full h-[200px] mx-auto flex justify-center rounded-[20px] overflow-hidden">
+            <Image
+              src={extractDirectImageUrl(product.image)}
+              alt={product.name}
+              width={400}
+              height={200}
+              className="block object-cover w-full h-full"
+            />
           </div>
+          <DialogTitle>{product.name}</DialogTitle>
+          <DialogDescription>{product.description}</DialogDescription>
+        </DialogHeader>
 
-          {/* Total and Quantity Controls */}
-          <div className="flex items-center justify-between mt-4">
-            <div className="text-lg font-semibold">
-              Total: ${calculateTotal().toFixed(2)}
-            </div>
+        <h2 className="w-full m-auto">Pick your size</h2>
+        <RadioGroupDemo
+          options={sizes.map((sizeOption) => ({
+            name: sizeOption.name,
+            price: sizeOption.price,
+          }))}
+          onValueChange={handleSizeChange}
+          defaultValue={sizes[0]?.name}
+        />
+
+        <h2 className="w-full m-auto">Any Extra</h2>
+        <CheckboxDemo
+          options={extras.map((extraOption) => ({
+            name: extraOption.name,
+            price: extraOption.price,
+          }))}
+          onCheckedChange={handleExtraChange}
+        />
+
+        {/* Quantity Controls */}
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-lg font-semibold">
+            Total: ${calculateTotal().toFixed(2)}
+          </div>
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+          </DialogClose>
+          {quantity > 0 ? (
             <div className="flex items-center gap-2">
               <Button
                 type="button"
@@ -164,23 +180,18 @@ const dispatch = useAppDispatch();
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setQuantity((q) => q + 1)}
+                onClick={handleAddToCart}
               >
                 +
               </Button>
             </div>
-          </div>
-
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline" className="hover:cursor-pointer">Cancel</Button>
-            </DialogClose>
-            <Button  className="hover:cursor-pointer hover:bg-red-300 hover:text-red-500"  type="submit"  onClick={handleAddToCart}>
+          ) : (
+            <Button className="bg-orange-400" onClick={handleAddToCart}>
               Add to Cart (${calculateTotal().toFixed(2)})
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </form>
+          )}
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }
