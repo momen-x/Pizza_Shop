@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,30 +16,26 @@ import { CheckboxDemo } from "../checkBox/CheckBox";
 import { ProductType, SizeType } from "@/utils/productsType";
 import { extractDirectImageUrl } from "@/utils/imageUtils";
 import Image from "next/image";
-import { ExtrasType } from "../../../utils/productsType";
+import { ExtrasType } from "../../../../utils/productsType";
 import { useCart, CartItem } from "@/context/CartContext";
 
 interface DialogDemoProps {
   product: ProductType;
 }
-//toDo refactor code to display a correct quantity
+
 export function DialogDemo({ product }: DialogDemoProps) {
-  const { cart, addToCart } = useCart();
+  const { addToCart, removeItemFromCart } = useCart();
 
   const sizes: SizeType[] = product.sizes;
   const extras: ExtrasType[] = product.extras ? product.extras : [];
 
-  // State for selected options
   const [selectedSize, setSelectedSize] = useState<string>(
     sizes[0]?.name || ""
   );
   const [selectedExtras, setSelectedExtras] = useState<ExtrasType[]>([]);
-  const [quantity, setQuantity] = useState(0);
-  console.log("quantity is >>>>>> ", quantity);
-
+  const [quantity, setQuantity] = useState(1);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Calculate total price
   const calculateTotal = () => {
     const sizeObj = sizes.find((s) => s.name === selectedSize);
     const sizePrice = sizeObj?.price || 0;
@@ -47,16 +43,14 @@ export function DialogDemo({ product }: DialogDemoProps) {
       (sum, extra) => sum + extra.price,
       0
     );
-    return (sizePrice + extrasPrice) * quantity;
+    return (product.basePrice + sizePrice + extrasPrice) * quantity;
   };
 
   const handleSizeChange = (sizeName: string) => {
-    console.log("Size changed to:", sizeName);
     setSelectedSize(sizeName);
   };
 
   const handleExtraChange = (extraName: string, isChecked: boolean) => {
-    console.log("Extra changed:", extraName, isChecked);
     const extra = extras.find((e) => e.name === extraName);
     if (extra) {
       setSelectedExtras((prev) =>
@@ -65,12 +59,6 @@ export function DialogDemo({ product }: DialogDemoProps) {
     }
   };
 
-  useEffect(() => {
-    const qua = cart.reduce((acc, item) => {
-      return acc + item.quantity;
-    }, 0);
-    setQuantity(qua);
-  }, []);
   const handleAddToCart = () => {
     const selectedSizeObj = sizes.find((s) => s.name === selectedSize);
 
@@ -78,36 +66,48 @@ export function DialogDemo({ product }: DialogDemoProps) {
       console.error("No size selected");
       return;
     }
-    setQuantity((q) => q + 1);
-    // Create the cart item
+
     const cartItem: CartItem = {
       name: product.name,
       id: product.id,
       image: product.image,
-      basePrice: selectedSizeObj.price,
+      basePrice: selectedSizeObj.price + product.basePrice,
       quantity: quantity,
       size: {
         id: selectedSizeObj.id || selectedSize,
-        name: selectedSizeObj.name as any,
+        name: selectedSizeObj.name,
         price: selectedSizeObj.price,
       },
       extras: selectedExtras.map((extra) => ({
         id: extra.id || extra.name,
-        name: extra.name as any,
+        name: extra.name,
         price: extra.price,
       })),
     };
 
     addToCart(cartItem);
-
-    // Reset form and close dialog
-    // setQuantity(1);
   };
+
+  const incrementQuantity = () => {
+    setQuantity((prev) => prev + 1);
+  };
+
+  const decrementQuantity = () => {
+    setQuantity((prev) => Math.max(1, prev - 1));
+  };
+
   const onClose = () => {
     setSelectedExtras([]);
     setSelectedSize(sizes[0]?.name || "");
+    setQuantity(1);
     setIsOpen(false);
   };
+
+  const removeItemFrom_Cart = () => {
+    removeItemFromCart(product.id);
+    setQuantity(1);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -141,6 +141,7 @@ export function DialogDemo({ product }: DialogDemoProps) {
           }))}
           onValueChange={handleSizeChange}
           defaultValue={sizes[0]?.name}
+          productPrice={product.basePrice}
         />
 
         <h2 className="w-full m-auto">Any Extra</h2>
@@ -154,9 +155,40 @@ export function DialogDemo({ product }: DialogDemoProps) {
 
         {/* Quantity Controls */}
         <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Quantity:</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={decrementQuantity}
+              disabled={quantity <= 1}
+            >
+              -
+            </Button>
+            <span className="w-8 text-center font-medium">{quantity}</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={incrementQuantity}
+            >
+              +
+            </Button>
+          </div>
+
           <div className="text-lg font-semibold">
             Total: ${calculateTotal().toFixed(2)}
           </div>
+        </div>
+        <div>
+          <Button
+            className="bg-orange-400 hover:bg-orange-100 hover:text-black rounded-3xl"
+            type="button"
+            onClick={removeItemFrom_Cart}
+          >
+            remove this item from catr
+          </Button>
         </div>
 
         <DialogFooter>
@@ -165,31 +197,9 @@ export function DialogDemo({ product }: DialogDemoProps) {
               Cancel
             </Button>
           </DialogClose>
-          {quantity > 0 ? (
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              >
-                -
-              </Button>
-              <span className="w-8 text-center">{quantity}</span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAddToCart}
-              >
-                +
-              </Button>
-            </div>
-          ) : (
-            <Button className="bg-orange-400" onClick={handleAddToCart}>
-              Add to Cart (${calculateTotal().toFixed(2)})
-            </Button>
-          )}
+          <Button className="bg-orange-400" onClick={handleAddToCart}>
+            Add to Cart (${calculateTotal().toFixed(2)})
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

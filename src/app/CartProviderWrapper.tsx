@@ -1,4 +1,3 @@
-// app/CartProviderWrapper.tsx
 "use client";
 
 import { CartProvider } from "@/context/CartContext";

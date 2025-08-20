@@ -45,7 +45,6 @@ export const CheckRegester = async (user: {
         country: user.country || null,
       },
     });
-    console.log("from server : ", newUser);
 
     return { success: true, message: "Registration successful" };
   } catch {

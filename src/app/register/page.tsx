@@ -1,6 +1,6 @@
 import React from "react";
-import Register from "../_components/register/Register";
 import { Metadata } from "next";
+import Register from "../_components/register/Register";
 
 export const metadata: Metadata = {
   title: "Rigester page",

@@ -1,11 +1,10 @@
-// app/layout.tsx
 import { Roboto } from "next/font/google";
 import "./globals.css";
-import Header from "./_components/header/header";
 import { ThemeProvider } from "@/components/theme-provider";
-import Fotter from "./_components/footer/Fotter";
 import { Metadata } from "next";
 import CartProviderWrapper from "./CartProviderWrapper";
+import Header from "./_components/header/header";
+import Footer from "./_components/footer/Fotter";
 
 export const metadata: Metadata = {
   title: "Pizza shop",
@@ -30,7 +29,7 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <Header />
             {children}
-            <Fotter />
+            <Footer />
           </ThemeProvider>
         </CartProviderWrapper>
       </body>

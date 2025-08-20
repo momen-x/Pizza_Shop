@@ -1,16 +1,16 @@
 "use client";
 import { createContext, useState, useContext, ReactNode } from "react";
-import { ExtraIngredients, ProductSizes } from "@prisma/client";
+// import { ExtraIngredients, ProductSizes } from "@prisma/client";
 
 export type Size = {
   id: string;
-  name: ProductSizes;
+  name: string;
   price: number;
 };
 
 export type Extra = {
   id: string;
-  name: ExtraIngredients;
+  name: string;
   price: number;
 };
 
@@ -25,10 +25,14 @@ export type CartItem = {
 };
 
 interface CartContextType {
+  deliveryFee: number;
   cart: CartItem[];
   setCart: (cart: CartItem[]) => void;
   addToCart: (item: CartItem) => void;
+  removeItemFromCart: (id: string) => void;
   getTotalItems: () => number;
+  getSubTotal: () => number;
+  getTotalAmount: () => number;
 }
 
 export const CartContext = createContext<CartContextType | undefined>(
@@ -38,13 +42,20 @@ export const CartContext = createContext<CartContextType | undefined>(
 export const CartProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("cartItems");
+      try {
+        return stored ? JSON.parse(stored) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
 
   const addToCart = (newItem: CartItem) => {
-    console.log("Adding to cart:", newItem); // Debug log
-
     setCart((prevCart) => {
-      // Check if item with same configuration exists
       const existingItemIndex = prevCart.findIndex(
         (item) =>
           item.id === newItem.id &&
@@ -60,23 +71,65 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
           ...updatedCart[existingItemIndex],
           quantity: updatedCart[existingItemIndex].quantity + newItem.quantity,
         };
-        console.log("Updated cart:", updatedCart); // Debug log
+        console.log("Updated cart: >>", updatedCart); // Debug log
+        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+
         return updatedCart;
       } else {
         // Add new item to cart
         const updatedCart = [...prevCart, newItem];
         console.log("New cart:", updatedCart); // Debug log
+        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+
         return updatedCart;
       }
     });
   };
 
+  const removeItemFromCart = (id: string) => {
+    const cart1 = [...cart];
+    const newCart = cart1.filter((item) => {
+      return item.id !== id;
+    });
+    setCart(newCart);
+    localStorage.setItem("cartItems", JSON.stringify(newCart));
+  };
+
   const getTotalItems = () => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
+
+  const getTotalAmount = () => {
+    return getSubTotal() + deliveryFee;
+  };
+
+  const getSubTotal = () => {
+    return cart.reduce((total, cartItem) => {
+      const extrasTotal = cartItem.extras?.reduce(
+        (sum, extra) => sum + (extra.price || 0),
+        0
+      );
+
+      const itemTotal =
+        cartItem.basePrice + (extrasTotal || 0) + (cartItem.size?.price || 0);
+
+      return total + itemTotal * cartItem.quantity!;
+    }, 0);
+  };
+
+  const deliveryFee = 5;
   return (
     <CartContext.Provider
-      value={{ cart, setCart, addToCart, getTotalItems }}
+      value={{
+        cart,
+        setCart,
+        addToCart,
+        getTotalItems,
+        removeItemFromCart,
+        deliveryFee,
+        getSubTotal,
+        getTotalAmount,
+      }}
     >
       {children}
     </CartContext.Provider>

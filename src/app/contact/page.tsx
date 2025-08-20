@@ -1,6 +1,6 @@
 import React from "react";
-import Contact from "../_components/Contact/Contact";
 import { Metadata } from "next";
+import { Contact } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Contact page",

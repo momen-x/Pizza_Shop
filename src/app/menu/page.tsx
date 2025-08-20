@@ -1,8 +1,8 @@
 import React from "react";
-import MenuPart from "../_components/MenuPart/MenuPart";
 import { prisma } from "@/lib/prisma";
 import { ProductType } from "@/utils/productsType";
 import { Metadata } from "next";
+import MenuPart from "../_components/MenuPart/MenuPart";
 
 export const metadata: Metadata = {
   title: "menu page",
@@ -79,8 +79,6 @@ const MenuPage = async () => {
       },
     },
   });
-
-  // console.log("data is >>>>>>>>>>>>>> : ", data[0]);
 
   return (
     <>

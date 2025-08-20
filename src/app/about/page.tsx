@@ -1,6 +1,6 @@
 import React from "react";
-import About from "../_components/Apout/about";
 import { Metadata } from "next";
+import About from "../Apout/about";
 
 export const metadata: Metadata = {
   title: "About page",

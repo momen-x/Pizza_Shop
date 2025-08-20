@@ -1,62 +1,35 @@
-// app/_components/header/EndHeader.tsx
 "use client";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuLabel,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/ui/mode-toggle";
-import Link from "@/app/_components/Link/Link";
 import React, { useEffect, useState } from "react";
 import { CiShoppingCart } from "react-icons/ci";
 import { FiUser } from "react-icons/fi";
-import { ChevronDown } from "lucide-react";
+// import { ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
+import Link from "../Link/Link";
 
 const EndHeader = () => {
-  const { cart } = useCart();
+  const { cart, getTotalItems } = useCart();
   const [quantity, setQuantity] = useState<number>(0);
-  const [lang, setLang] = useState({ language: "English", direction: "ltr" });
+  // const [lang, setLang] = useState({ language: "English", direction: "ltr" });
 
   useEffect(() => {
-    const qua = cart.reduce((acc, item) => {
-      return acc + item.quantity;
-    }, 0);
-    setQuantity(qua);
-  }, [cart]); // Use cart as dependency, not cart.length
+    setQuantity(getTotalItems());
+  }, [cart, getTotalItems]);
 
   return (
     <div className="flex items-center gap-4 p-4">
       {/* Language Selector */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="flex items-center gap-1">
-            {lang.language}
-            <ChevronDown className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-40">
-          <DropdownMenuLabel>Select Language</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => setLang({ language: "English", direction: "rtl" })}
-            className="cursor-pointer"
-          >
-            العربية
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => setLang({ language: "العربية", direction: "ltr" })}
-            className="cursor-pointer"
-          >
-            English
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+
 
       {/* Login Button */}
       <Link href="/login">

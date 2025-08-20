@@ -36,7 +36,6 @@ const Navbar = () => {
       }
     };
 
-    // Set initial value
     handleResize();
 
     window.addEventListener("resize", handleResize);

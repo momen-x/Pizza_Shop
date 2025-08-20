@@ -1,6 +1,6 @@
 import Image from "next/image";
 import React from "react";
-import pizza1 from "../../../../public/assets/images/pizza1.jpeg";
+import pizza1 from "../../../public/assets/images/pizza2.jpeg";
 
 const About = () => {
   return (
@@ -10,7 +10,7 @@ const About = () => {
           <div className="md:w-1/2">
             <Image
               alt="Pizzeria"
-              src={pizza1} // Replace with your about us image
+              src={pizza1} 
               width={600}
               height={400}
               loading="eager"

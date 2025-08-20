@@ -10,6 +10,9 @@ interface MenuPartProps {
   description: string;
 }
 
+
+
+
 const MenuPart = async ({ data, title, description }: MenuPartProps) => {
   return (
     <div>

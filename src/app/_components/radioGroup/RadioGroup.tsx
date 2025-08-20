@@ -6,12 +6,14 @@ interface RadioGroupDemoProps {
   options: Option[];
   defaultValue?: string;
   onValueChange?: (value: string) => void;
+  productPrice: number;
 }
 
 export function RadioGroupDemo({
   options,
   defaultValue,
   onValueChange,
+  productPrice,
 }: RadioGroupDemoProps) {
   return (
     <RadioGroup
@@ -28,7 +30,7 @@ export function RadioGroupDemo({
           <div key={id} className="flex items-center gap-3">
             <RadioGroupItem value={value} id={id} />
             <Label htmlFor={id} className="font-normal cursor-pointer">
-              {option.name} ${option.price.toFixed(2)}
+              {option.name} ${(option.price + productPrice).toFixed(2)}
             </Label>
           </div>
         );

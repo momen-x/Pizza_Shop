@@ -3,12 +3,12 @@ import pizza from "../../public/assets/images/pizzaHome.jpeg";
 import { Button } from "@/components/ui/button";
 import { LiaSignInAltSolid } from "react-icons/lia";
 import { IoIosArrowForward } from "react-icons/io";
-import About from "./_components/Apout/about";
 import Contact from "./_components/Contact/Contact";
 import { prisma } from "@/lib/prisma";
 import MenuPart from "./_components/MenuPart/MenuPart";
 import { ProductType } from "@/utils/productsType";
 import { Metadata } from "next";
+import About from "./Apout/about";
 
 export const metadata: Metadata = {
   title: "Pizza Shop",
@@ -17,7 +17,6 @@ export const metadata: Metadata = {
 
 async function Home() {
   try {
-    // Check if prisma is available
     if (!prisma) {
       console.error("Prisma client is not initialized");
       return <div>Database connection error</div>;
@@ -32,7 +31,6 @@ async function Home() {
         extras: true,
       },
     });
-    // console.log("prouct us", await rawProducts);
 
     const Products: ProductType[] = rawProducts.map((product) => ({
       basePrice: product.basePrice,
@@ -85,13 +83,8 @@ async function Home() {
       );
     }
 
-    // for (let i = 0; i < Products.length && i < 3; i++) {
-    //   data.push(Products[i]);
-    // }
-
     for (let i = 0; i < Products.length && i < 3; i++) {
       data.push(Products[i]);
-      // console.log(`Product ${i + 1}:`, Products[i]);
     }
 
     return (
