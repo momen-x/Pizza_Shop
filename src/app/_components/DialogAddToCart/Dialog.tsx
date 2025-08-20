@@ -13,10 +13,9 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroupDemo } from "../radioGroup/RadioGroup";
 import { CheckboxDemo } from "../checkBox/CheckBox";
-import { ProductType, SizeType } from "@/utils/productsType";
+import { ExtrasType, ProductType, SizeType } from "@/utils/productsType";
 import { extractDirectImageUrl } from "@/utils/imageUtils";
 import Image from "next/image";
-import { ExtrasType } from "../../../../utils/productsType";
 import { useCart, CartItem } from "@/context/CartContext";
 
 interface DialogDemoProps {
