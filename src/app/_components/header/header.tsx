@@ -16,8 +16,8 @@ const Header = async () => {
   const name = payload?.name;
 
   return (
-    <header className="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className=" shadow-md sticky top-0 z-50">
+      <div className="mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Always visible */}
           <div className="flex-shrink-0 flex items-center">
@@ -32,7 +32,7 @@ const Header = async () => {
           {/* EndHeader and Mobile Menu Button */}
           <div className="flex items-center space-x-2 lg:space-x-4">
             <EndHeader isLogin={isLogin} name={name} />
-            
+
             {/* Mobile/Tablet menu button - Only the button, not full navbar */}
             <div className="lg:hidden">
               <Navbar isAdmin={isAdmin} />

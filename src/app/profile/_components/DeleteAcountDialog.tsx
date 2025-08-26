@@ -73,7 +73,9 @@ export function DeleteAcountDialog({ id, open, setOpen }: Iprops) {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
             </DialogClose>
             <Button
               type="submit"

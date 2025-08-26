@@ -1,7 +1,6 @@
 import Link from "../Link/Link";
 import React from "react";
-import logoDark from "../../../../public/assets/images/favicon.ico";
-import logoLight from "../../../../public/assets/images/logo.jpeg";
+import logo from "../../favicon.ico"
 import Image from "next/image";
 const Logo = () => {
   return (
@@ -10,19 +9,10 @@ const Logo = () => {
         <h1 className="text-2xl font-bold">Pizza Shop</h1>
         <div className="text-4xl">
           <Image
-            src={logoDark}
-            alt="logo"
-            height={100}
-            width={100}
-            className="hidden dark:block"
-          />
-          <Image
-            src={logoLight}
-            alt="logo"
-            height={80}
-            width={80}
-            className="dark:hidden"
-          />
+          src={logo}
+          alt="logo"
+          height={50}
+          width={50}/>
         </div>
       </Link>
     </div>

@@ -10,8 +10,6 @@ import { useCart } from "@/context/CartContext";
 import Link from "../Link/Link";
 import { useRouter } from "next/navigation";
 import { logout } from "@/utils/Server/logoutOnServeer";
-import { BiRegistered } from "react-icons/bi";
-
 // import { logout } from "@/actions/logout"; // Import your server action
 
 interface Props {
@@ -20,7 +18,7 @@ interface Props {
 }
 
 const EndHeader = (props: Props) => {
-  const { cart, getTotalItems,setCart } = useCart();
+  const { cart, getTotalItems } = useCart();
   const [quantity, setQuantity] = useState<number>(0);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
@@ -36,14 +34,10 @@ const EndHeader = (props: Props) => {
     try {
       // Call the server action to delete the cookie
       await logout();
-
-      // Redirect to login page and refresh
-      localStorage.removeItem("cartItems");
-      setCart([]);
-      router.refresh();
       
-      // This will trigger a re-render with updated auth state
+      // Redirect to login page and refresh
       router.push("/login");
+      router.refresh(); // This will trigger a re-render with updated auth state
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
@@ -56,41 +50,24 @@ const EndHeader = (props: Props) => {
       {/* Login/Logout Button */}
       {props.isLogin ? (
         <>
-          <Button
-            onClick={handleLogout}
+          <Button 
+            onClick={handleLogout} 
             disabled={isLoggingOut}
             variant="outline"
           >
             {isLoggingOut ? "Logging out..." : "Log out"}
           </Button>
-          <Link
-            href={"/profile"}
-            className="text-sm font-medium hover:underline"
-          >
+          <Link href={"/profile"} className="text-sm font-medium hover:underline">
             {props.name}
           </Link>
         </>
       ) : (
-        <>
-          <Link href="/login">
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 cursor-pointer "
-            >
-              <FiUser className="h-4 w-4" />
-              Login
-            </Button>
-          </Link>
-          <Link href="/register">
-            <Button
-              variant="default"
-              className="flex items-center gap-2 bg-orange-400 rounded-2xl hover:bg-orange-600 cursor-pointer"
-            >
-              <BiRegistered className="h-4 w-4" />
-              Register
-            </Button>
-          </Link>
-        </>
+        <Link href="/login">
+          <Button variant="outline" className="flex items-center gap-2">
+            <FiUser className="h-4 w-4" />
+            Login
+          </Button>
+        </Link>
       )}
 
       {/* Shopping Cart */}
