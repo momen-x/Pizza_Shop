@@ -1,5 +1,3 @@
-
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -27,6 +25,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
 }
+
 // to ensure that the user can be deleted if the session is deleted
 // and the account is deleted if the user is deleted
 // onDelete: Cascade ensures that related records are deleted when the parent is deleted
@@ -72,7 +71,7 @@ model Account {
 
 model Product {
   id          String         @id @default(cuid())
-  name        String
+  name        String         @unique
   description String
   image       String
   order       Int            @default(autoincrement())
@@ -83,7 +82,7 @@ model Product {
   extras      Extra[]
   orders      OrderProduct[]
   categoryId  String
-  category    Category       @relation(fields: [categoryId], references: [id])
+  category    Category       @relation(fields: [categoryId], references: [id],onDelete: Cascade)
 }
 
 model Size {
@@ -103,13 +102,13 @@ model Extra {
 }
 
 model Category {
-  id       String    @id @default(uuid())
-  name     String @unique
-  description String
-  order    Int       @default(autoincrement())
-  products Product[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String    @unique
+  order       Int       @default(autoincrement())
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Order {

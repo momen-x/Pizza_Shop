@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import { Contact } from "lucide-react";
+import Contact from "../_components/Contact/Contact";
 
 export const metadata: Metadata = {
   title: "Contact page",
@@ -10,6 +10,7 @@ const ContactPage = () => {
   return (
     <div>
       <Contact />
+
     </div>
   );
 };

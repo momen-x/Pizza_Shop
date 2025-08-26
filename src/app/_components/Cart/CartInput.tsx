@@ -33,7 +33,6 @@ const CartInput = () => {
   });
 
   const removeItemFromCart = (id: string, size: string, extras: Extra[]) => {
-    console.log("i am clicked");
 
     const newCart = cart.filter((item) => {
       const isMatch =
@@ -66,12 +65,12 @@ const CartInput = () => {
     setIsProcessing(true);
 
     // Simulate processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      // Handle order submission here
-    }, 2000);
+    //   setTimeout(() => {
+    //     setIsProcessing(false);
+    //     // Handle order submission here
+    //   }, 2000);
+    // };
   };
-
   const isFormValid = () => {
     return (
       Object.values(cartData).every((value) => value.trim() !== "") &&

@@ -1,43 +1,97 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuLabel,
-//   DropdownMenuSeparator,
-//   DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import React, { useEffect, useState } from "react";
 import { CiShoppingCart } from "react-icons/ci";
 import { FiUser } from "react-icons/fi";
-// import { ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
 import Link from "../Link/Link";
+import { useRouter } from "next/navigation";
+import { logout } from "@/utils/Server/logoutOnServeer";
+import { BiRegistered } from "react-icons/bi";
 
-const EndHeader = () => {
-  const { cart, getTotalItems } = useCart();
+// import { logout } from "@/actions/logout"; // Import your server action
+
+interface Props {
+  isLogin: boolean;
+  name?: string;
+}
+
+const EndHeader = (props: Props) => {
+  const { cart, getTotalItems,setCart } = useCart();
   const [quantity, setQuantity] = useState<number>(0);
-  // const [lang, setLang] = useState({ language: "English", direction: "ltr" });
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setQuantity(getTotalItems());
   }, [cart, getTotalItems]);
 
+  const handleLogout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingOut(true);
+
+    try {
+      // Call the server action to delete the cookie
+      await logout();
+
+      // Redirect to login page and refresh
+      localStorage.removeItem("cartItems");
+      setCart([]);
+      router.refresh();
+      
+      // This will trigger a re-render with updated auth state
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <div className="flex items-center gap-4 p-4">
-      {/* Language Selector */}
-
-
-      {/* Login Button */}
-      <Link href="/login">
-        <Button variant="outline" className="flex items-center gap-2">
-          <FiUser className="h-4 w-4" />
-          Login
-        </Button>
-      </Link>
+      {/* Login/Logout Button */}
+      {props.isLogin ? (
+        <>
+          <Button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            variant="outline"
+          >
+            {isLoggingOut ? "Logging out..." : "Log out"}
+          </Button>
+          <Link
+            href={"/profile"}
+            className="text-sm font-medium hover:underline"
+          >
+            {props.name}
+          </Link>
+        </>
+      ) : (
+        <>
+          <Link href="/login">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 cursor-pointer "
+            >
+              <FiUser className="h-4 w-4" />
+              Login
+            </Button>
+          </Link>
+          <Link href="/register">
+            <Button
+              variant="default"
+              className="flex items-center gap-2 bg-orange-400 rounded-2xl hover:bg-orange-600 cursor-pointer"
+            >
+              <BiRegistered className="h-4 w-4" />
+              Register
+            </Button>
+          </Link>
+        </>
+      )}
 
       {/* Shopping Cart */}
       <Link href="/cart" className="relative cursor-pointer">

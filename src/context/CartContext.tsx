@@ -71,14 +71,14 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
           ...updatedCart[existingItemIndex],
           quantity: updatedCart[existingItemIndex].quantity + newItem.quantity,
         };
-        console.log("Updated cart: >>", updatedCart); // Debug log
+        // console.log("Updated cart: >>", updatedCart); // Debug log
         localStorage.setItem("cartItems", JSON.stringify(updatedCart));
 
         return updatedCart;
       } else {
         // Add new item to cart
         const updatedCart = [...prevCart, newItem];
-        console.log("New cart:", updatedCart); // Debug log
+        // console.log("New cart:", updatedCart); // Debug log
         localStorage.setItem("cartItems", JSON.stringify(updatedCart));
 
         return updatedCart;

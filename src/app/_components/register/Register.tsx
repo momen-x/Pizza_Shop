@@ -12,7 +12,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  FaGoogle,
   FaPizzaSlice,
   FaUser,
   FaEnvelope,
@@ -26,9 +25,9 @@ import Link from "../Link/Link";
 import { LucideSearchCode } from "lucide-react";
 import { LiaCitySolid } from "react-icons/lia";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CheckRegester } from "@/utils/RegisterOnServer";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CheckRegester } from "@/utils/Server/RegisterOnServer";
 
 const Register = () => {
   const router = useRouter();
@@ -43,12 +42,106 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
-  const [passwordStrength, setPasswordStrength] = useState(0);
+  // const [passwordStrength, setPasswordStrength] = useState(0);
+  // const [photo] = useState();
 
   const [acceptedTerms, setAcceptedTerms] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
+  // const validateField = (field: string, value: string) => {
+  //   let error = "";
+
+  //   switch (field) {
+  //     case "name":
+  //       if (value && value.length < 5) {
+  //         error = "the name must be at lest 5 characters ";
+  //       }
+
+  //       break;
+  //     case "email":
+  //       if (value && !validateEmail(value)) {
+  //         error = "Please enter a valid email address";
+  //       }
+  //       break;
+  //     case "password":
+  //       if (value && value.length < 6) {
+  //         error = "Password must be at least 6 characters";
+  //       }
+  //       break;
+  //     case "confirmPassword":
+  //       if (value && value !== userData.password) {
+  //         error = "Passwords do not match";
+  //       }
+  //       break;
+
+  //     // Add more cases
+  //   }
+
+  //   setFieldErrors((prev) => ({ ...prev, [field]: error }));
+  // };
+
+  const validateAllFields = (): boolean => {
+    const newFieldErrors = {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    };
+
+    // Validate name
+    if (!userData.name.trim()) {
+      newFieldErrors.name = "Name is required";
+    }
+
+    // Validate email
+    if (!userData.email.trim()) {
+      newFieldErrors.email = "Email is required";
+    } else if (!validateEmail(userData.email)) {
+      newFieldErrors.email = "Please enter a valid email address";
+    }
+
+    // Validate password
+    if (!userData.password.trim()) {
+      newFieldErrors.password = "Password is required";
+    } else if (userData.password.length < 6) {
+      newFieldErrors.password = "Password must be at least 6 characters";
+    }
+
+    // Validate confirm password
+    if (!userData.confirmPassword.trim()) {
+      newFieldErrors.confirmPassword = "Please confirm your password";
+    } else if (userData.password !== userData.confirmPassword) {
+      newFieldErrors.confirmPassword = "Passwords do not match";
+    }
+
+    // Check terms acceptance
+    if (!acceptedTerms) {
+      setError("You must accept our terms and privacy policy");
+      setFieldErrors(newFieldErrors);
+      return false;
+    }
+
+    // Update field errors
+    setFieldErrors(newFieldErrors);
+
+    // Check if any field has an error
+    const hasErrors = Object.values(newFieldErrors).some(
+      (error) => error !== ""
+    );
+
+    if (!hasErrors) {
+      setError(""); // Clear any global error
+    }
+
+    return !hasErrors;
+  };
   const handleChangeStat = (
     e: React.ChangeEvent<HTMLInputElement>,
     field: string
@@ -106,7 +199,22 @@ const Register = () => {
 
   const handleRegister = async (e: FormEvent) => {
     e.preventDefault();
-    if (!validationInput()) return;
+    const isValid = validateAllFields();
+    if (!isValid) {
+      // Focus on first invalid field instead of scrolling
+      const firstErrorField = Object.entries(fieldErrors).find(
+        ([key, error]) => error
+      )?.[0];
+      if (firstErrorField) {
+        document.getElementById(firstErrorField)?.focus();
+      }
+      return;
+    }
+    if (!validationInput()) {
+      window.scrollTo(0, 0);
+
+      return;
+    }
 
     try {
       setLoading(true);
@@ -114,7 +222,9 @@ const Register = () => {
 
       if (response.success) {
         setError("");
-        setTimeout(() => router.push("/"), 2000); // Remove the duplicate router.push
+        // setTimeout(() =>
+        router.push("/");
+        // , 2000); // Remove the duplicate router.push
       } else {
         setError(response.message);
       }
@@ -123,11 +233,6 @@ const Register = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const calculateStrength = (password: string) => {
-    // Implement your strength calculation
-    return Math.min((password.length / 10) * 100, 100);
   };
 
   return (
@@ -153,12 +258,16 @@ const Register = () => {
 
         <CardContent className="p-6">
           {error && (
-            <Alert variant="destructive">
+            <Alert variant="destructive" className="text-red-400">
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
+
           <form className="space-y-4" onSubmit={handleRegister}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label
@@ -173,12 +282,23 @@ const Register = () => {
                   id="lastName"
                   type="text"
                   required
-                  className="py-4 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500 pl-10"
+                  className={`py-4 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500 pl-10 ${
+                    fieldErrors.name
+                      ? "border-red-500 focus-visible:ring-red-500"
+                      : userData.name && !fieldErrors.name
+                      ? "border-green-500"
+                      : ""
+                  }`}
                   value={userData.name}
                   onChange={(e) => {
                     handleChangeStat(e, "name");
                   }}
                 />
+                {fieldErrors.name && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {fieldErrors.name}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -196,12 +316,21 @@ const Register = () => {
                 type="email"
                 placeholder="your@email.com"
                 required
-                className="py-4 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500 pl-10"
+                className={`py-4 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500 pl-10 ${
+                  fieldErrors.email
+                    ? "border-red-500 focus-visible:ring-red-500"
+                    : userData.email && !fieldErrors.email
+                    ? "border-green-500"
+                    : ""
+                }`}
                 value={userData.email}
                 onChange={(e) => {
                   handleChangeStat(e, "email");
                 }}
               />
+              {fieldErrors.email && (
+                <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -320,13 +449,24 @@ const Register = () => {
                   disabled={loading}
                   id="password"
                   type="password"
-                  className="py-4 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500 pl-10"
+                  className={`py-4 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500 pl-10 ${
+                    fieldErrors.password
+                      ? "border-red-500 focus-visible:ring-red-500"
+                      : userData.password && !fieldErrors.password
+                      ? "border-green-500"
+                      : ""
+                  }`}
                   value={userData.password}
                   onChange={(e) => {
                     handleChangeStat(e, "password");
-                    setPasswordStrength(calculateStrength(e.target.value));
+                    // setPasswordStrength(calculateStrength(e.target.value));
                   }}
                 />
+                {fieldErrors.password && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {fieldErrors.password}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -342,10 +482,21 @@ const Register = () => {
                   id="confirmPassword"
                   type="password"
                   required
-                  className="py-4 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500 pl-10"
+                  className={`py-4 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500 pl-10 ${
+                    fieldErrors.confirmPassword
+                      ? "border-red-500 focus-visible:ring-red-500"
+                      : userData.confirmPassword && !fieldErrors.confirmPassword
+                      ? "border-green-500"
+                      : ""
+                  }`}
                   value={userData.confirmPassword}
                   onChange={(e) => handleChangeStat(e, "confirmPassword")}
                 />
+                {fieldErrors.confirmPassword && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {fieldErrors.confirmPassword}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -378,7 +529,14 @@ const Register = () => {
               className="w-full py-5 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-lg shadow-lg hover:shadow-orange-500/30 transition-all"
               onClick={handleRegister}
             >
-              {loading ? "Creating Account..." : "Create Account"}{" "}
+              {loading ? (
+                <>
+                  <span className="animate-spin mr-2">⏳</span>
+                  Creating Account...
+                </>
+              ) : (
+                "Create Account"
+              )}
             </Button>
           </form>
         </CardContent>
@@ -395,13 +553,7 @@ const Register = () => {
             </div>
           </div>
 
-          <Button
-            variant="outline"
-            className="w-full py-4 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            <FaGoogle className="mr-2 text-red-500" />
-            Continue with Google
-          </Button>
+      
 
           <p className="text-center text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{" "}

@@ -1,5 +1,5 @@
 "use client";
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,53 +9,97 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { MdErrorOutline } from "react-icons/md";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FaGoogle, FaPizzaSlice } from "react-icons/fa";
 import Image from "next/image";
 import pizzaBackground from "../../../../public/assets/images/pizzaHome.jpeg";
 import Link from "../Link/Link";
-import { CheckLogin } from "@/utils/LoginOnServer";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CheckLogin } from "@/utils/Server/LoginOnServer";
+
 const Login = () => {
   const router = useRouter();
   const [checkUser, setCheckUser] = useState({
     email: "",
     password: "",
   });
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState({
+    email: "",
+    password: "",
+    user: "",
+  });
+  const [touched, setTouched] = useState({
+    email: false,
+    password: false,
+  });
   const [loading, setLoading] = useState<boolean>(false);
 
-  const dataValidation = (): boolean => {
-    if (!checkUser.email.trim() || !checkUser.password.trim()) {
-      setError("the email and password is required");
-      return false;
+  // Real-time validation on field change
+  useEffect(() => {
+    if (touched.email || touched.password) {
+      validateForm();
     }
-    if (!checkUser.email.includes("@")) {
-      setError("Enter correct email");
-      return false;
+  }, [ touched.email,touched.password]);
+
+  const validateForm = (): boolean => {
+    const newError = {
+      email: "",
+      password: "",
+      user: "",
+    };
+    let isValid = true;
+
+    // Email validation
+    if (!checkUser.email.trim()) {
+      newError.email = "Email is required";
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(checkUser.email)) {
+      newError.email = "Please enter a valid email address";
+      isValid = false;
     }
-    setError("");
-    return true;
+
+    // Password validation
+    if (!checkUser.password.trim()) {
+      newError.password = "Password is required";
+      isValid = false;
+    } else if (checkUser.password.length < 6) {
+      newError.password = "Password must be at least 6 characters";
+      isValid = false;
+    }
+
+    setError(newError);
+    return isValid;
+  };
+
+  const handleBlur = (field: keyof typeof touched) => {
+    setTouched({ ...touched, [field]: true });
+    validateForm();
   };
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!dataValidation()) {
+    // Mark all fields as touched to show all errors
+    setTouched({ email: true, password: true });
+
+    if (!validateForm()) {
       return;
     }
-    const response = await CheckLogin(checkUser);
+
     try {
       setLoading(true);
-      if (response.success) {
-        router.push("/");
+      const response = await CheckLogin(checkUser);
+
+      if (!response.success) {
+        setError({ ...error, user: response.message });
       } else {
-        setError(response.message);
+        router.push("/");
       }
     } catch {
-      setError(response.message);
+      setError({ ...error, user: "An error occurred during login" });
     } finally {
       setLoading(false);
     }
@@ -88,12 +132,15 @@ const Login = () => {
         </CardHeader>
 
         <CardContent>
-          {error && (
-            <Alert variant="destructive">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
+          {error.user && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTitle className="text-red-600 flex items-center gap-1">
+                <MdErrorOutline /> Error
+              </AlertTitle>
+              <AlertDescription>{error.user}</AlertDescription>
             </Alert>
-          )}{" "}
+          )}
+
           <form className="space-y-6" onSubmit={handleLogin}>
             <div className="space-y-2">
               <Label
@@ -108,16 +155,25 @@ const Login = () => {
                 type="email"
                 placeholder="your@email.com"
                 required
-                className="py-5 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500"
+                className={`py-5 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500 ${
+                  error.email ? "border-red-500" : ""
+                }`}
                 value={checkUser.email}
                 onChange={(e) => {
                   setCheckUser({ ...checkUser, email: e.target.value });
                 }}
+                onBlur={() => handleBlur("email")}
               />
+              {error.email && (
+                <p className="text-red-600 text-sm flex items-center gap-1 mt-1">
+                  <MdErrorOutline className="inline" />
+                  {error.email}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center">
+              <div className="flex items-center justify-between">
                 <Label
                   htmlFor="password"
                   className="text-gray-700 dark:text-gray-300"
@@ -126,7 +182,7 @@ const Login = () => {
                 </Label>
                 <Button
                   variant="link"
-                  className="ml-auto text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 p-0 h-auto"
+                  className="text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 p-0 h-auto"
                 >
                   Forgot password?
                 </Button>
@@ -136,28 +192,35 @@ const Login = () => {
                 id="password"
                 type="password"
                 required
-                className="py-5 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500"
+                className={`py-5 border-gray-300 dark:border-gray-600 focus-visible:ring-orange-500 ${
+                  error.password ? "border-red-500" : ""
+                }`}
                 value={checkUser.password}
                 onChange={(e) => {
                   setCheckUser({ ...checkUser, password: e.target.value });
                 }}
+                onBlur={() => handleBlur("password")}
               />
+              {error.password && (
+                <p className="text-red-600 text-sm flex items-center gap-1 mt-1">
+                  <MdErrorOutline className="inline" />
+                  {error.password}
+                </p>
+              )}
             </div>
 
             <Button
-              disabled={
-                loading || !checkUser.email.trim() || !checkUser.password.trim()
-              }
+              disabled={loading || !!error.email || !!error.password}
               type="submit"
-              className="w-full py-5 bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+              className="w-full py-5 bg-orange-500 hover:bg-orange-600 text-white font-semibold disabled:opacity-50"
             >
-              Let&apos;s Eat! Sign In
+              {loading ? "Signing in..." : "Let's Eat! Sign In"}
             </Button>
           </form>
         </CardContent>
 
         <CardFooter className="flex-col gap-4">
-          <div className="relative w-full">
+          {/* <div className="relative w-full">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-gray-300 dark:border-gray-600" />
             </div>
@@ -166,15 +229,15 @@ const Login = () => {
                 Or continue with
               </span>
             </div>
-          </div>
-
+          </div> */}
+{/* 
           <Button
             variant="outline"
             className="w-full py-5 border-gray-300 dark:border-gray-600"
           >
             <FaGoogle className="mr-2 text-red-500" />
             Sign in with Google
-          </Button>
+          </Button> */}
 
           <p className="text-center text-sm text-gray-600 dark:text-gray-400">
             Don&apos;t have an account?{" "}

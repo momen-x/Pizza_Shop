@@ -2,8 +2,19 @@ import React from "react";
 import Navbar from "./Navbar";
 import Logo from "./Logo";
 import EndHeader from "./EndHeader";
+import { cookies } from "next/headers";
+import { verifyTokenForPage } from "@/utils/verifyTokenForPage";
+import { tokenName } from "@/utils/tokenName";
 
-const Header = () => {
+const Header = async () => {
+  const cookieStore = cookies();
+  const token = (await cookieStore)?.get(tokenName);
+
+  const payload = verifyTokenForPage(token?.value || "");
+  const isAdmin = payload?.isAdmin || false;
+  const isLogin = payload !== null ? true : false;
+  const name = payload?.name;
+
   return (
     <header className="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,19 +24,19 @@ const Header = () => {
             <Logo />
           </div>
 
-          {/* Navbar - Hidden on mobile (handled inside Navbar component) */}
-          <div className="hidden md:block">
-            <Navbar />
+          {/* Desktop Navigation - Hidden on tablet and mobile */}
+          <div className="hidden lg:flex flex-1 justify-center">
+            <Navbar isAdmin={isAdmin} />
           </div>
 
-          {/* EndHeader - Visible on all screens */}
-          <div className="ml-4 flex items-center md:ml-6">
-            <EndHeader />
-          </div>
-
-          {/* Mobile navbar toggle is now inside Navbar component */}
-          <div className="-mr-2 flex md:hidden">
-            <Navbar />
+          {/* EndHeader and Mobile Menu Button */}
+          <div className="flex items-center space-x-2 lg:space-x-4">
+            <EndHeader isLogin={isLogin} name={name} />
+            
+            {/* Mobile/Tablet menu button - Only the button, not full navbar */}
+            <div className="lg:hidden">
+              <Navbar isAdmin={isAdmin} />
+            </div>
           </div>
         </div>
       </div>

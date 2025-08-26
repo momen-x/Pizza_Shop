@@ -4,7 +4,7 @@ import React from "react";
 const Contact = () => {
   return (
     <div className="mb-16">
-      <section className="bg-orange-500 text-white py-16">
+      <section className="bg-orange-500 text-white py-16 h-screen">
         <div className="container mx-auto px-4 text-center">
           <p className="font-semibold">DON&apos;T HESITATE</p>
           <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-6">
