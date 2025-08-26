@@ -129,7 +129,7 @@ const EditUserDataByAdmin = (props: IProps) => {
       } else {
         if (confirm("are u sure u want delete this user !?")) {
           await deleteUserByAdmin(props.id);
-          router.push("Admin/user");
+          router.back();
         }
       }
     } catch (error) {
